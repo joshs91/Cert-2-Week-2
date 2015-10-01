@@ -1,6 +1,9 @@
 var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
 
+var background = document.createElement("img");
+background.src = "background.png"
+
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
 
@@ -32,10 +35,32 @@ function getDeltaTime()
 	return deltaTime;
 }
 
+var STATE_SPLASH = 0;
+var STATE_GAME = 1;
+var STATE_GAMEOVER = 2;
+var splashTimer = 3;
+var gameState = STATE_SPLASH;
+
 //-------------------- Don't modify anything above here
 
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
+
+function runSplash(deltaTime)
+{
+	context.fillStyle = "#000";
+	context.font = "24px Arial";
+	context.fillText("ASTEROIDS", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	
+	context.font = "17px Arial";
+	context.fillText("Press Enter To Start", 630, 400);
+	
+	if(keyboard.isKeyDown(keyboard.KEY_ENTER) && (gameState == STATE_SPLASH))
+	{
+		gameState = STATE_GAME;
+		return;
+	}
+}
 
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
@@ -88,12 +113,25 @@ var keyboard = new Keyboard();
 var cam_x = 0;
 var cam_y = 0;
 
-function run()
+//var example_emitter = new Emitter();
+//example_emitter.Initialise(200, 200, 1, 0, 13000, 4.0, 1000, 0.5, true)
+
+function runGame(deltaTime)
 {
 	context.fillStyle = "#ccc";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(background, 0, 0, canvas.width, canvas.height)
 	
 	var deltaTime = getDeltaTime();
+	
+	var background_sound = new Howl(
+	{
+		urls: ["background.ogg"],
+		loop: true,
+		buffer: true,
+		volume: 0.5
+	});
+	background_sound.play();
 	
 	var wanted_cam_x;
 	var wanted_cam_y;
@@ -114,12 +152,13 @@ function run()
 	cam_x = Math.floor(lerp(0.1, cam_x, wanted_cam_x));
 	cam_y = Math.floor(lerp(0.1, cam_y, wanted_cam_y));
 	
-	//context.drawImage(chuckNorris, SCREEN_WIDTH/2 - chuckNorris.width/2, SCREEN_HEIGHT/2 - chuckNorris.height/2);
-	
 	drawMap(cam_x, cam_y);
 	
 	player.update(deltaTime);
 	player.draw(cam_x, cam_y);
+	
+	//example_emitter.update(deltaTime);
+	//example_emitter.draw(cam_x, cam_y);
 		
 	// update the frame counter 
 	fpsTime += deltaTime;
@@ -132,9 +171,62 @@ function run()
 	}		
 		
 	// draw the FPS
-	//context.fillStyle = "#f00";
-	//context.font="14px Arial";
-	//context.fillText("FPS: " + fps, 5, 20, 100);
+	context.fillStyle = "#f00";
+	context.font="14px Arial";
+	context.fillText("FPS: " + fps, 5, 20, 100);
+}
+
+function runGameOver(deltaTime)
+{
+	drawBackground();
+	
+	context.font = "40px Arial";
+	context.fillStyle = "white";
+	context.fillText("GAME OVER", 500, 240);
+	
+	context.font = "20px Arial";
+	context.fillStyle = "white";
+	context.fillText("Score:", 560, 280);
+	
+	context.font = "20px Arial";
+	context.fillStyle = "white";
+	context.fillText(score, 650, 280);
+	
+	context.font = "15px Arial";
+	context.fillStyle = "white";
+	context.fillText("Press R to Restart", 555, 300);
+	
+	if(event.keyCode == KEY_R && gameState == STATE_GAMEOVER)
+	{
+		gameState = STATE_GAME;
+		player.isDead = false;
+		player.lives = 3;
+		asteroids = [];
+		score = 0;
+		player.x = SCREEN_WIDTH / 2;
+		player.y = SCREEN_HEIGHT / 2;
+		bullets = [];
+		player.rotation = 0;
+		asteroidIncrease = 5;
+	}
+}
+
+function run()
+{
+	var deltaTime = getDeltaTime();
+	
+	switch(gameState)
+	{
+		case STATE_SPLASH:
+			runSplash(deltaTime);
+			break;
+		case STATE_GAME:
+			runGame(deltaTime);
+			break;
+		case STATE_GAMEOVER:
+			runGameOver(deltaTime);
+			break;
+	}
 }
 
 

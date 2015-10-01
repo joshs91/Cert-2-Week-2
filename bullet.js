@@ -9,7 +9,7 @@ var Bullet = function()
 	this.vel_y = 0;
 	
 	this.image = document.createElement("img");
-	this.image.src = "";
+	this.image.src = "bullet.png";
 	
 	this.isDead = true;
 }

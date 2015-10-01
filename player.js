@@ -76,6 +76,7 @@ var Player = function()
 	this.lives = 3;
 	this.lives_image = document.createElement("img");
 	this.lives_image.src = "heart.png";
+	this.isDead = false;
 	
 	this.direction - LEFT;
 	
@@ -91,11 +92,58 @@ var Player = function()
 	this.shoot_cooldown = 0.0;
 	this.shoot_timer = 0.1;
 	
+	var self = this;
+	this.is_jump_sfx_playing = false;
+	
+	this.jump_sfx = new Howl(
+	{
+		urls: ["hup.wav"],
+		buffer: true,
+		volume: 1,
+		onend: function()
+		{
+			self.is_jump_sfx_playing = false;
+		}
+	});
+	
+	this.is_shoot_sfx_playing = false;
+	this.shoot_sfx = new Howl(
+	{
+		urls: ["fireEffect.ogg"],
+		buffer: true,
+		volume: 1,
+		onend: function() 
+		{
+			self.is_shoot_sfx_playing = false;
+		}
+	});
+	
 }
 
 Player.prototype.update = function(deltaTime)
 {
 	this.sprite.update(deltaTime);
+	
+	if (this.y > MAP.th * TILE + 300)
+	{
+		if (this.lives > 1)
+		{
+			this.lives --;
+			this.x = this.spawn_x;
+			this.y = this.spawn_y;
+		}
+		else if (this.lives == 1)
+		{
+			this.lives --;
+		}
+	}
+	
+	if(this.lives == 0)
+	{
+		gameState = STATE_GAMEOVER;
+		return;
+	}
+
 	
 	var left = false;
 	var right = false;
@@ -155,21 +203,29 @@ Player.prototype.update = function(deltaTime)
 					this.sprite.setAnimation(ANIM_SHOOT_RIGHT);
 			}
 			this.shoot = true;
-		}
-		if (this.shoot_cooldown <= 0)
-		{
-			var jitter = Math.random() * 0.2 - 0.1;
-			
-			if (this.direction == LEFT)
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, -1, jitter);
-			else
-				this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
-			
-			this.shoot_cooldown = this.shoot_timer;
-			
-			this.cur_bullet_index ++;
-			if (this.cur_bullet_index >= this.max_bullets)
-				this.cur_bullet_index = 0;
+		
+			if (this.shoot_cooldown <= 0 && (left == true || right == true))
+			{
+				//if (!this.is_shoot_sfx_playing)
+				//{
+					
+					this.shoot_sfx.play();
+					this.is_shoot_sfx_playing = true;
+				//}
+				
+				var jitter = Math.random() * 0.2 - 0.1;
+				
+				if (this.direction == LEFT)
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, -1, jitter);
+				else
+					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+				
+				this.shoot_cooldown = this.shoot_timer;
+				
+				this.cur_bullet_index ++;
+				if (this.cur_bullet_index >= this.max_bullets)
+					this.cur_bullet_index = 0;
+			}
 		}
 	}
 	
@@ -207,6 +263,9 @@ Player.prototype.update = function(deltaTime)
 	
 	if (jump && !this.jumping && !falling)
 	{
+		this.jump_sfx.play();
+		this.is_jump_sfx_playing = true;
+		
 		ddy = ddy - JUMP;
 		this.jumping = true;
 		if (this.direction == LEFT)
@@ -284,19 +343,7 @@ Player.prototype.update = function(deltaTime)
 		}
 	}
 	
-	if (this.y > canvas.height + 300)
-	{
-		if (this.lives > 1)
-		{
-			this.lives --;
-			this.x = this.spawn_x;
-			this.y = this.spawn_y;
-		}
-		else if (this.lives == 1)
-		{
-			this.lives --;
-		}
-	}
+
 	
 }
 
