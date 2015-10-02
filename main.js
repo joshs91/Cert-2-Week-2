@@ -222,11 +222,11 @@ function runGameWin(deltaTime)
 	
 	context.font = "40px Arial";
 	context.fillStyle = "black";
-	context.fillText("YOU WIN", 240, 200);
+	context.fillText("YOU WIN", 240, 320);
 	
 	context.font = "15px Arial";
 	context.fillStyle = "black";
-	context.fillText("Press R to Chuck Off", 260, 250);
+	context.fillText("Press R to Chuck Off", 260, 360);
 	
 	if(keyboard.isKeyDown(keyboard.KEY_R) && (gameState == STATE_GAMEWIN))
 		{

@@ -144,10 +144,6 @@ Player.prototype.update = function(deltaTime)
 		return;
 	}
 	
-	//debug
-	context.fillStyle = "#ccc";
-	context.fillRect(MAP.tw * TILE - 100, MAP.th * TILE - 1, 100, 300);
-	
 	if((this.x >= MAP.tw * TILE - TILE * 4) && (this.y >= MAP.th * TILE - TILE * 4))
 	{
 		gameState = STATE_GAMEWIN;
@@ -193,9 +189,15 @@ Player.prototype.update = function(deltaTime)
 	{
 		jump = true;
 		if (left == true)
-			this.sprite.setAnimation(ANIM_JUMP_LEFT)
+		{
+			if (this.sprite.currentAnimation != ANIM_JUMP_LEFT)
+				this.sprite.setAnimation(ANIM_JUMP_LEFT);
+		}
 		if (right == true)
-			this.sprite.setAnimation(ANIM_JUMP_RIGHT)
+		{
+			if (this.sprite.currentAnimation != ANIM_JUMP_RIGHT)
+				this.sprite.setAnimation(ANIM_JUMP_RIGHT);
+		}
 	}
 	
 	if(keyboard.isKeyDown(keyboard.KEY_SHIFT))
