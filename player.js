@@ -143,6 +143,16 @@ Player.prototype.update = function(deltaTime)
 		gameState = STATE_GAMEOVER;
 		return;
 	}
+	
+	//debug
+	context.fillStyle = "#ccc";
+	context.fillRect(MAP.tw * TILE - 100, MAP.th * TILE - 1, 100, 300);
+	
+	if((this.x >= MAP.tw * TILE - TILE * 4) && (this.y >= MAP.th * TILE - TILE * 4))
+	{
+		gameState = STATE_GAMEWIN;
+		return;
+	}
 
 	
 	var left = false;
@@ -200,7 +210,9 @@ Player.prototype.update = function(deltaTime)
 			else if (right == true)
 			{
 				if (this.sprite.currentAnimation != ANIM_SHOOT_RIGHT)
+				{
 					this.sprite.setAnimation(ANIM_SHOOT_RIGHT);
+				}
 			}
 			this.shoot = true;
 		
@@ -208,7 +220,6 @@ Player.prototype.update = function(deltaTime)
 			{
 				//if (!this.is_shoot_sfx_playing)
 				//{
-					
 					this.shoot_sfx.play();
 					this.is_shoot_sfx_playing = true;
 				//}
@@ -218,7 +229,7 @@ Player.prototype.update = function(deltaTime)
 				if (this.direction == LEFT)
 					this.bullets[this.cur_bullet_index].fire(this.x, this.y, -1, jitter);
 				else
-					this.bullets[this.cur_bullet_index].fire(this.x, this.y, 1, jitter);
+					this.bullets[this.cur_bullet_index].fire(this.x + 70, this.y - 10, 1, jitter);
 				
 				this.shoot_cooldown = this.shoot_timer;
 				
@@ -280,8 +291,8 @@ Player.prototype.update = function(deltaTime)
 		}
 	}
 	
-	this.x = Math.floor(this.x + (deltaTime * this.velocity_x))
-	this.y = Math.floor(this.y + (deltaTime * this.velocity_y))
+	this.x = Math.floor(this.x + (deltaTime * this.velocity_x));
+	this.y = Math.floor(this.y + (deltaTime * this.velocity_y));
 	this.velocity_x = bound(this.velocity_x + (deltaTime * ddx), -MAXDX, MAXDX);
 	this.velocity_y = bound(this.velocity_y + (deltaTime * ddy), -MAXDY, MAXDY);
 	
@@ -341,10 +352,7 @@ Player.prototype.update = function(deltaTime)
 			this.x = tileToPixel(tx + 1);
 			this.velocity_x = 0;
 		}
-	}
-	
-
-	
+	}	
 }
 
 Player.prototype.draw = function(_cam_x, _cam_y)

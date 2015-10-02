@@ -33,9 +33,9 @@ Bullet.prototype.update = function(deltaTime)
 		
 		if (this.x < 0 || this.x > MAP.tw * TILE ||
 			this.y < 0 || this.y > MAP.th * TILE)
-			{
-				this.isDead = true;
-			}
+		{
+			this.isDead = true;
+		}
 	}
 }
 

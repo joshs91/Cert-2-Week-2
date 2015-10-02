@@ -2,7 +2,13 @@ var canvas = document.getElementById("gameCanvas");
 var context = canvas.getContext("2d");
 
 var background = document.createElement("img");
-background.src = "background.png"
+background.src = "background.png";
+
+var death_background = document.createElement("img");
+death_background.src = "death_background.png";
+
+var win_background = document.createElement("img");
+win_background.src = "win_background.jpg";
 
 var startFrameMillis = Date.now();
 var endFrameMillis = Date.now();
@@ -38,7 +44,8 @@ function getDeltaTime()
 var STATE_SPLASH = 0;
 var STATE_GAME = 1;
 var STATE_GAMEOVER = 2;
-var splashTimer = 3;
+var STATE_GAMEWIN = 3;
+var splashTimer = 4;
 var gameState = STATE_SPLASH;
 
 //-------------------- Don't modify anything above here
@@ -46,21 +53,14 @@ var gameState = STATE_SPLASH;
 var SCREEN_WIDTH = canvas.width;
 var SCREEN_HEIGHT = canvas.height;
 
-function runSplash(deltaTime)
+var background_sound = new Howl(
 {
-	context.fillStyle = "#000";
-	context.font = "24px Arial";
-	context.fillText("ASTEROIDS", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-	
-	context.font = "17px Arial";
-	context.fillText("Press Enter To Start", 630, 400);
-	
-	if(keyboard.isKeyDown(keyboard.KEY_ENTER) && (gameState == STATE_SPLASH))
-	{
-		gameState = STATE_GAME;
-		return;
-	}
-}
+	urls: ["background.ogg"],
+	loop: true,
+	buffer: true,
+	volume: 0.5
+});
+background_sound.play();
 
 
 // some variables to calculate the Frames Per Second (FPS - this tells use
@@ -116,22 +116,33 @@ var cam_y = 0;
 //var example_emitter = new Emitter();
 //example_emitter.Initialise(200, 200, 1, 0, 13000, 4.0, 1000, 0.5, true)
 
-function runGame(deltaTime)
+
+function runSplash(deltaTime)
 {
 	context.fillStyle = "#ccc";		
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(background, 0, 0, canvas.width, canvas.height)
 	
-	var deltaTime = getDeltaTime();
+	context.fillStyle = "#000";
+	context.font = "24px Arial";
+	context.fillText("Chuck me a Game!", 220, 200);
 	
-	var background_sound = new Howl(
+	context.font = "17px Arial";
+	context.fillText("Press Enter To Chuck Norris", 216, 250);
+	
+	if(keyboard.isKeyDown(keyboard.KEY_ENTER) && (gameState == STATE_SPLASH))
 	{
-		urls: ["background.ogg"],
-		loop: true,
-		buffer: true,
-		volume: 0.5
-	});
-	background_sound.play();
+		gameState = STATE_GAME;
+		return;
+	}
+}
+
+
+function runGame(deltaTime)
+{
+	context.fillStyle = "#ccc";		
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(background, 0, 0, canvas.width, canvas.height)
 	
 	var wanted_cam_x;
 	var wanted_cam_y;
@@ -171,44 +182,61 @@ function runGame(deltaTime)
 	}		
 		
 	// draw the FPS
-	context.fillStyle = "#f00";
-	context.font="14px Arial";
-	context.fillText("FPS: " + fps, 5, 20, 100);
+	//context.fillStyle = "#f00";
+	//context.font="14px Arial";
+	//context.fillText("FPS: " + fps, 5, 20, 100);
 }
 
 function runGameOver(deltaTime)
 {
-	drawBackground();
+	context.fillStyle = "#ccc";		
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(death_background, 0, 0, canvas.width, canvas.height)
 	
 	context.font = "40px Arial";
 	context.fillStyle = "white";
-	context.fillText("GAME OVER", 500, 240);
+	context.fillText("GAME OVER", 200, 200);
 	
 	context.font = "20px Arial";
 	context.fillStyle = "white";
-	context.fillText("Score:", 560, 280);
-	
-	context.font = "20px Arial";
-	context.fillStyle = "white";
-	context.fillText(score, 650, 280);
+	context.fillText("Get Chucked, Mate", 230, 220);
 	
 	context.font = "15px Arial";
 	context.fillStyle = "white";
-	context.fillText("Press R to Restart", 555, 300);
+	context.fillText("Press R to Restart", 260, 250);
 	
-	if(event.keyCode == KEY_R && gameState == STATE_GAMEOVER)
-	{
-		gameState = STATE_GAME;
-		player.isDead = false;
-		player.lives = 3;
-		asteroids = [];
-		score = 0;
-		player.x = SCREEN_WIDTH / 2;
-		player.y = SCREEN_HEIGHT / 2;
-		bullets = [];
-		player.rotation = 0;
-		asteroidIncrease = 5;
-	}
+	if(keyboard.isKeyDown(keyboard.KEY_R) && (gameState == STATE_GAMEOVER))
+		{
+			gameState = STATE_GAME;
+			player.isDead = false;
+			player.lives = 4;
+			return;
+		}
+}
+
+function runGameWin(deltaTime)
+{
+	context.fillStyle = "#ccc";		
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.drawImage(win_background, 0, 0, canvas.width, canvas.height)
+	
+	context.font = "40px Arial";
+	context.fillStyle = "black";
+	context.fillText("YOU WIN", 240, 200);
+	
+	context.font = "15px Arial";
+	context.fillStyle = "black";
+	context.fillText("Press R to Chuck Off", 260, 250);
+	
+	if(keyboard.isKeyDown(keyboard.KEY_R) && (gameState == STATE_GAMEWIN))
+		{
+			gameState = STATE_GAME;
+			player.isDead = false;
+			player.lives = 3;
+			player.x = player.spawn_x;
+			player.y = player.spawn_y;
+			return;
+		}
 }
 
 function run()
@@ -225,6 +253,9 @@ function run()
 			break;
 		case STATE_GAMEOVER:
 			runGameOver(deltaTime);
+			break;
+		case STATE_GAMEWIN:
+			runGameWin(deltaTime);
 			break;
 	}
 }
